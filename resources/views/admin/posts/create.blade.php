@@ -2,9 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1 class="mb-5">EDIT:
-            <a href="{{ route('admin.posts.show', $post->id) }}">{{ $post->title }}</a>
-        </h1>
+        <h1 class="mb-5">CREATE NEW POST</h1>
 
         <div class="row">
             <div class="col-md-8 offset-md-2">
@@ -19,13 +17,13 @@
                     </div>
                 @endif
 
-                <form action="{{ route('admin.posts.update', $post->id) }}" method="POST">
+                <form action="{{ route('admin.posts.store') }}" method="POST">
                     @csrf
-                    @method('PATCH')
+                    @method('POST')
 
                     <div class="mb-3">
                         <label for="title" class="form-label">Title*</label>
-                        <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" id="title" value="{{ old('title', $post->title) }}">
+                        <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" id="title" value="{{ old('title') }}">
                         @error('title')
                             <div class="feedback">{{ $message }}</div>
                         @enderror
@@ -34,16 +32,15 @@
                     <div class="mb-3">
                         <label for="content" class="control-label">Content*</label>
                         <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content"
-                            rows="6">{{ old('content', $post->content) }}</textarea>
+                            rows="6">{{ old('content') }}</textarea>
                         @error('content')
                             <div class="feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    <button class="btn btn-primary" type="submit">Update post</button>
+                    <button class="btn btn-primary" type="submit">Create post</button>
                 </form>
             </div>
         </div>
     </div>
 @endsection
-

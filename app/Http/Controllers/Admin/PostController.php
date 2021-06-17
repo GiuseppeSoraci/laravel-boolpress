@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use App\Post;
 
 class PostController extends Controller
@@ -27,7 +29,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.posts.create');
     }
 
     /**
@@ -38,7 +40,27 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validation
+        $request->validate([
+            'title' => 'required|unique:posts|min:5',
+            'content' => 'required',
+        ], [
+            'required' => 'The :attribute is required',
+            'unique' => 'The :attribute is already in use for another post',
+        ]);
+
+
+        $data = $request->all();
+
+        // gen slug
+        $data['slug'] = Str::slug($data['title'], '-');
+
+        // save record on db
+        $new_post = new Post();
+        $new_post->fill($data);
+        $new_post->save();
+
+        return redirect()->route('admin.posts.show', $new_post->id);
     }
 
     /**
@@ -51,7 +73,7 @@ class PostController extends Controller
     {
         $post = Post::find($id);
 
-        if(! $post) {
+        if (!$post) {
             abort(404);
         }
 
@@ -68,8 +90,8 @@ class PostController extends Controller
     {
         $post = Post::find($id);
 
-        if($post) {
-        return view('admin.posts.edit', compact('post'));
+        if ($post) {
+            return view('admin.posts.edit', compact('post'));
         }
 
         abort(404);
@@ -84,9 +106,28 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Validation
+        $request->validate([
+            'title' => [
+                'required',
+                Rule::unique('posts')->ignore($id),
+                'min: 5'
+            ],
+            'content' => 'required',
+        ], [
+            'required' => 'The :attribute is required',
+            'unique' => 'The :attribute is already in use for another post',
+        ]);
+
+
         $data = $request->all();
 
         $post = Post::find($id);
+
+        // gen slug
+        if($data['title'] != $post->title) {
+            $data['slug'] = Str::slug($data['title'], '-');
+        }
 
         $post->update($data);
 

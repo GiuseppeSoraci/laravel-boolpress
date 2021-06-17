@@ -2,9 +2,18 @@
 
 @section('content')
     <div class="container">
+        @if (session('deleted'))
+            <div class="alert alert-success">
+                <strong>{{ session('deleted') }}</strong>
+                deleted successfully.
+            </div>
+        @endif
+    </div>
+    <div class="container">
         <h1>OUR POSTS</h1>
+        <a class="btn btn-primary" href="{{ route('admin.posts.create') }}">Create new post</a>
 
-        <table class="table">
+        <table class="table mt-5">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -14,23 +23,26 @@
             </thead>
             <tbody>
                 @foreach ($posts as $post)
-                <tr>
-                    <td>{{$post->id }}</td>
-                    <td>{{ $post->title }}</td>
-                    <td>
-                        <a class="btn btn-success" href="{{ route('admin.posts.show', $post->id) }}">SHOW</a>
-                    </td>
-                    <td>
-                        <a class="btn btn-primary" href="{{ route('admin.posts.edit', $post->id) }}">
-                            EDIT
-                        </a>
-                    </td>
-                    <td><form action="{{ route('admin.posts.destroy', $post->id) }}" method="POST">
-                        @csrf
-                        @method('DELETE')
+                    <tr>
+                        <td>{{ $post->id }}</td>
+                        <td>{{ $post->title }}</td>
+                        <td>
+                            <a class="btn btn-success" href="{{ route('admin.posts.show', $post->id) }}">SHOW</a>
+                        </td>
+                        <td>
+                            <a class="btn btn-primary" href="{{ route('admin.posts.edit', $post->id) }}">
+                                EDIT
+                            </a>
+                        </td>
+                        <td>
+                            <form class="delete-post-form" action="{{ route('admin.posts.destroy', $post->id) }}"
+                                method="POST">
+                                @csrf
+                                @method('DELETE')
 
-                        <input type="submit" class="btn btn-danger" value="DELETE"></td>
-                </tr>
+                                <input type="submit" class="btn btn-danger" value="DELETE">
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
