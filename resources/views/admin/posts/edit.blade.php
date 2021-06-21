@@ -25,7 +25,8 @@
 
                     <div class="mb-3">
                         <label for="title" class="form-label">Title*</label>
-                        <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" id="title" value="{{ old('title', $post->title) }}">
+                        <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" id="title"
+                            value="{{ old('title', $post->title) }}">
                         @error('title')
                             <div class="feedback">{{ $message }}</div>
                         @enderror
@@ -40,10 +41,25 @@
                         @enderror
                     </div>
 
+                    <div class="mb-3">
+                        <label for="category_id">Category</label>
+                        <select class="form-control @error('category_id') is-invalid @enderror" name="category_id"
+                            id="category_id">
+                            <option value="">-- Select Category</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}" @if ($category->id == old('category_id', $post->category_id)) selected @endif>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('category_id')
+                            <div class="feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <button class="btn btn-primary" type="submit">Update post</button>
                 </form>
             </div>
         </div>
     </div>
 @endsection
-

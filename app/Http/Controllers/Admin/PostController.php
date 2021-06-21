@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Post;
+use App\Category;
 
 class PostController extends Controller
 {
@@ -18,8 +19,9 @@ class PostController extends Controller
     public function index()
     {
         $posts = Post::all();
+        $categories = Category::all();
 
-        return view('admin.posts.index', compact('posts'));
+        return view('admin.posts.index', compact('posts', 'categories'));
     }
 
     /**
@@ -29,7 +31,9 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view('admin.posts.create');
+        $posts = Post::all();
+        $categories = Category::all();
+        return view('admin.posts.create', compact('posts', 'categories'));
     }
 
     /**
@@ -44,6 +48,7 @@ class PostController extends Controller
         $request->validate([
             'title' => 'required|unique:posts|min:5',
             'content' => 'required',
+            'category_id' => 'nullable|exists:categories,id'
         ], [
             'required' => 'The :attribute is required',
             'unique' => 'The :attribute is already in use for another post',
@@ -72,12 +77,13 @@ class PostController extends Controller
     public function show($id)
     {
         $post = Post::find($id);
+        $categories = Category::all();
 
         if (!$post) {
             abort(404);
         }
 
-        return view('admin.posts.show', compact('post'));
+        return view('admin.posts.show', compact('post', 'categories'));
     }
 
     /**
@@ -89,9 +95,10 @@ class PostController extends Controller
     public function edit($id)
     {
         $post = Post::find($id);
+        $categories = Category::all();
 
         if ($post) {
-            return view('admin.posts.edit', compact('post'));
+            return view('admin.posts.edit', compact('post', 'categories'));
         }
 
         abort(404);
@@ -114,6 +121,7 @@ class PostController extends Controller
                 'min: 5'
             ],
             'content' => 'required',
+            'category_id' => 'nullable|exists:categories,id'
         ], [
             'required' => 'The :attribute is required',
             'unique' => 'The :attribute is already in use for another post',
@@ -125,7 +133,7 @@ class PostController extends Controller
         $post = Post::find($id);
 
         // gen slug
-        if($data['title'] != $post->title) {
+        if ($data['title'] != $post->title) {
             $data['slug'] = Str::slug($data['title'], '-');
         }
 
