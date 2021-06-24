@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Post;
 use App\Category;
+use App\Tag;
 
 class PostController extends Controller
 {
@@ -20,8 +21,9 @@ class PostController extends Controller
     {
         $posts = Post::all();
         $categories = Category::all();
+        $tags = Tag::all();
 
-        return view('admin.posts.index', compact('posts', 'categories'));
+        return view('admin.posts.index', compact('posts', 'categories', 'tags'));
     }
 
     /**
@@ -33,7 +35,8 @@ class PostController extends Controller
     {
         $posts = Post::all();
         $categories = Category::all();
-        return view('admin.posts.create', compact('posts', 'categories'));
+        $tags = Tag::all();
+        return view('admin.posts.create', compact('posts', 'categories', 'tags'));
     }
 
     /**
@@ -48,7 +51,8 @@ class PostController extends Controller
         $request->validate([
             'title' => 'required|unique:posts|min:5',
             'content' => 'required',
-            'category_id' => 'nullable|exists:categories,id'
+            'category_id' => 'nullable|exists:categories,id',
+            'tags' => 'nullable|exists:tags,id'
         ], [
             'required' => 'The :attribute is required',
             'unique' => 'The :attribute is already in use for another post',
@@ -60,10 +64,16 @@ class PostController extends Controller
         // gen slug
         $data['slug'] = Str::slug($data['title'], '-');
 
-        // save record on db
+        // create and save record on db
         $new_post = new Post();
         $new_post->fill($data);
         $new_post->save();
+
+        // save relation with tags in pivot tab
+        if (array_key_exists('tags', $data)) {
+            // post_tag
+            $new_post->tags()->attach($data['tags']); // add new records to pivot tab
+        }
 
         return redirect()->route('admin.posts.show', $new_post->id);
     }
@@ -77,13 +87,12 @@ class PostController extends Controller
     public function show($id)
     {
         $post = Post::find($id);
-        $categories = Category::all();
 
-        if (!$post) {
+        if (! $post) {
             abort(404);
         }
 
-        return view('admin.posts.show', compact('post', 'categories'));
+        return view('admin.posts.show', compact('post'));
     }
 
     /**
@@ -96,9 +105,10 @@ class PostController extends Controller
     {
         $post = Post::find($id);
         $categories = Category::all();
+        $tags = Tag::all();
 
         if ($post) {
-            return view('admin.posts.edit', compact('post', 'categories'));
+            return view('admin.posts.edit', compact('post', 'categories', 'tags'));
         }
 
         abort(404);
@@ -121,7 +131,8 @@ class PostController extends Controller
                 'min: 5'
             ],
             'content' => 'required',
-            'category_id' => 'nullable|exists:categories,id'
+            'category_id' => 'nullable|exists:categories,id',
+            'tags' => 'nullable|exists:tags,id'
         ], [
             'required' => 'The :attribute is required',
             'unique' => 'The :attribute is already in use for another post',
@@ -139,6 +150,13 @@ class PostController extends Controller
 
         $post->update($data);
 
+        // update relation pivot tab
+        if (array_key_exists('tags', $data)) {
+            $post->tags()->sync($data['tags']);
+        } else {
+            $post->tags()->detach(); // remove all records pivot tab
+        }
+
         return redirect()->route('admin.posts.show', $post->id);
     }
 
@@ -151,6 +169,11 @@ class PostController extends Controller
     public function destroy($id)
     {
         $post = Post::find($id);
+
+        // remove tags
+        $post->tags()->detach();
+
+        // remove
         $post->delete();
         return redirect()->route('admin.posts.index')->with('deleted', $post->title);
     }

@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+/**
+ * GET BLOG POSTS
+ */
+Route::namespace('Api')->group(function () {
+    // Get posts
+    Route::get('posts', 'PostController@index');
 });

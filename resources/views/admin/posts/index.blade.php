@@ -31,6 +31,12 @@
                             @if ($post->category) {{ $post->category->name }}
                             @endif
                         </td>
+
+                        <td>
+                            <div>{{ $post->created_at->format('l d/m/y') }}</div>
+                            <div>{{ $post->created_at->diffForHumans() }}</div>
+                        </td>
+
                         <td>
                             <a class="btn btn-success" href="{{ route('admin.posts.show', $post->id) }}">SHOW</a>
                         </td>
